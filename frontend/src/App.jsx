@@ -41,22 +41,32 @@ const REQUIRED_FIELDS = [
 const DATE_FIELDS = ['date', 'dateOfAccident']
 
 function App() {
-  const [formData, setFormData] = useState({
-    serialNumber: '',
-    caseNumber: '',
-    policyNumber: '',
-    claimNumber: '',
-    vehicleNumber: '',
-    court: '',
-    title: '',
-    firNumber: '',
-    date: '',
-    dateOfAccident: ''
+  const [formData, setFormData] = useState(() => {
+    const savedDraft = localStorage.getItem('formDraft')
+    if (savedDraft) {
+      try {
+        return JSON.parse(savedDraft)
+      } catch (e) {
+        console.error('Error parsing draft:', e)
+      }
+    }
+    return {
+      serialNumber: '',
+      caseNumber: '',
+      policyNumber: '',
+      claimNumber: '',
+      vehicleNumber: '',
+      court: '',
+      title: '',
+      firNumber: '',
+      date: '',
+      dateOfAccident: ''
+    }
   })
-  
+
   const [datasets, setDatasets] = useState([])
-  const [selectedDataset, setSelectedDataset] = useState('')
-  const [newDatasetName, setNewDatasetName] = useState('')
+  const [selectedDataset, setSelectedDataset] = useState(() => localStorage.getItem('lastSelectedDataset') || '')
+  const [newDatasetName, setNewDatasetName] = useState(() => localStorage.getItem('lastNewDatasetName') || '')
   const [errors, setErrors] = useState({})
   const [submitStatus, setSubmitStatus] = useState(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -72,7 +82,7 @@ function App() {
   const [highContrast, setHighContrast] = useState(() => {
     return localStorage.getItem('highContrast') === 'true'
   })
-  
+
   const inputRefs = useRef({})
   const recognitionRef = useRef(null)
 
@@ -100,6 +110,17 @@ function App() {
     localStorage.setItem('highContrast', highContrast.toString())
   }, [highContrast])
 
+  // Auto-save form draft
+  useEffect(() => {
+    // Only save if dirty (has at least one field filled) or if we want to persist empty state too (simpler)
+    // We avoid saving if we are in 'manage' mode (editing existing entry) to prevent overwriting new entry draft?
+    // Actually, user might want to persist edit in progress too? 
+    // For now scope to "Data Entry" mode for drafts to keep logical separation.
+    if (viewMode === 'form' && !editingEntry) {
+      localStorage.setItem('formDraft', JSON.stringify(formData))
+    }
+  }, [formData, viewMode, editingEntry])
+
   const increaseFontSize = () => {
     setFontSize(prev => Math.min(prev + 2, 24))
   }
@@ -111,6 +132,14 @@ function App() {
   const resetFontSize = () => {
     setFontSize(16)
   }
+
+  useEffect(() => {
+    localStorage.setItem('lastSelectedDataset', selectedDataset)
+  }, [selectedDataset])
+
+  useEffect(() => {
+    localStorage.setItem('lastNewDatasetName', newDatasetName)
+  }, [newDatasetName])
 
   useEffect(() => {
     if (selectedDataset && viewMode === 'manage') {
@@ -219,18 +248,18 @@ function App() {
         newErrors[field] = `${FIELD_LABELS[field]} is required`
       }
     })
-    
+
     if (!selectedDataset && !newDatasetName.trim()) {
       newErrors.dataset = 'Please select or create a dataset'
     }
-    
+
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
+
     if (!validateForm()) {
       return
     }
@@ -252,7 +281,7 @@ function App() {
       })
 
       const result = await response.json()
-      
+
       if (response.ok) {
         setSubmitStatus({ type: 'success', message: 'Data submitted successfully!' })
         setFormData({
@@ -267,6 +296,7 @@ function App() {
           date: '',
           dateOfAccident: ''
         })
+        localStorage.removeItem('formDraft')
         setNewDatasetName('')
         await fetchDatasets()
         if (!datasets.includes(datasetName)) {
@@ -299,7 +329,7 @@ function App() {
 
   const handleUpdate = async (e) => {
     e.preventDefault()
-    
+
     if (!validateForm()) {
       return
     }
@@ -319,7 +349,7 @@ function App() {
       })
 
       const result = await response.json()
-      
+
       if (response.ok) {
         setSubmitStatus({ type: 'success', message: 'Entry updated successfully!' })
         setEditingEntry(null)
@@ -358,7 +388,7 @@ function App() {
       })
 
       const result = await response.json()
-      
+
       if (response.ok) {
         await fetchDatasetEntries(selectedDataset)
       } else {
@@ -390,7 +420,7 @@ function App() {
 
   const handleDownload = async (datasetName = null) => {
     try {
-      const url = datasetName 
+      const url = datasetName
         ? `/api/export?dataset=${encodeURIComponent(datasetName)}`
         : '/api/export'
       const response = await fetch(url)
@@ -425,15 +455,14 @@ function App() {
               role="tab"
               aria-selected={viewMode === 'form'}
               aria-controls="form-panel"
-              className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors border-2 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 ${
-                viewMode === 'form'
-                  ? highContrast 
-                    ? 'bg-black text-white border-black'
-                    : 'bg-blue-700 text-white border-blue-700'
-                  : highContrast
-                    ? 'bg-white text-black border-black hover:bg-gray-100'
-                    : 'bg-gray-100 text-gray-900 border-gray-300 hover:bg-gray-200'
-              }`}
+              className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors border-2 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 ${viewMode === 'form'
+                ? highContrast
+                  ? 'bg-black text-white border-black'
+                  : 'bg-blue-700 text-white border-blue-700'
+                : highContrast
+                  ? 'bg-white text-black border-black hover:bg-gray-100'
+                  : 'bg-gray-100 text-gray-900 border-gray-300 hover:bg-gray-200'
+                }`}
             >
               Data Entry
             </button>
@@ -447,15 +476,14 @@ function App() {
               role="tab"
               aria-selected={viewMode === 'manage'}
               aria-controls="manage-panel"
-              className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors border-2 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 ${
-                viewMode === 'manage'
-                  ? highContrast 
-                    ? 'bg-black text-white border-black'
-                    : 'bg-blue-700 text-white border-blue-700'
-                  : highContrast
-                    ? 'bg-white text-black border-black hover:bg-gray-100'
-                    : 'bg-gray-100 text-gray-900 border-gray-300 hover:bg-gray-200'
-              }`}
+              className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors border-2 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 ${viewMode === 'manage'
+                ? highContrast
+                  ? 'bg-black text-white border-black'
+                  : 'bg-blue-700 text-white border-blue-700'
+                : highContrast
+                  ? 'bg-white text-black border-black hover:bg-gray-100'
+                  : 'bg-gray-100 text-gray-900 border-gray-300 hover:bg-gray-200'
+                }`}
             >
               Manage Datasets
             </button>
@@ -483,11 +511,10 @@ function App() {
                   fetchDatasetEntries(e.target.value)
                 }
               }}
-              className={`flex-1 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 ${
-                highContrast 
-                  ? 'border-2 border-black bg-white text-black'
-                  : 'border-2 border-gray-800 bg-white text-gray-900'
-              }`}
+              className={`flex-1 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 ${highContrast
+                ? 'border-2 border-black bg-white text-black'
+                : 'border-2 border-gray-800 bg-white text-gray-900'
+                }`}
               aria-label="Select existing dataset"
             >
               <option value="">Select existing dataset...</option>
@@ -509,11 +536,10 @@ function App() {
                   })
                 }}
                 placeholder="Or create new dataset..."
-                className={`w-full rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 ${
-                  highContrast 
-                    ? 'border-2 border-black bg-white text-black placeholder-gray-600'
-                    : 'border-2 border-gray-800 bg-white text-gray-900 placeholder-gray-500'
-                }`}
+                className={`w-full rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 ${highContrast
+                  ? 'border-2 border-black bg-white text-black placeholder-gray-600'
+                  : 'border-2 border-gray-800 bg-white text-gray-900 placeholder-gray-500'
+                  }`}
                 aria-label="Create new dataset name"
               />
             </div>
@@ -528,28 +554,26 @@ function App() {
           <div role="tabpanel" id="form-panel" aria-labelledby="form-tab">
             <form onSubmit={editingEntry ? handleUpdate : handleSubmit} className={`${highContrast ? 'bg-white border-2 border-black' : 'bg-white'} rounded-lg shadow-sm p-6 mb-6`}>
               {editingEntry && (
-                <div className={`mb-4 p-3 rounded-md border-2 ${
-                  highContrast 
-                    ? 'bg-gray-100 border-black'
-                    : 'bg-blue-50 border-blue-300'
-                }`}>
+                <div className={`mb-4 p-3 rounded-md border-2 ${highContrast
+                  ? 'bg-gray-100 border-black'
+                  : 'bg-blue-50 border-blue-300'
+                  }`}>
                   <p className={`text-sm font-semibold ${highContrast ? 'text-black' : 'text-blue-900'}`}>
                     <strong>Editing Entry ID:</strong> {editingEntry.id}
                   </p>
                   <button
                     type="button"
                     onClick={handleCancelEdit}
-                    className={`mt-2 text-sm font-semibold underline focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 ${
-                      highContrast 
-                        ? 'text-black hover:text-gray-700'
-                        : 'text-blue-700 hover:text-blue-900'
-                    }`}
+                    className={`mt-2 text-sm font-semibold underline focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 ${highContrast
+                      ? 'text-black hover:text-gray-700'
+                      : 'text-blue-700 hover:text-blue-900'
+                      }`}
                   >
                     Cancel Edit
                   </button>
                 </div>
               )}
-              
+
               <div className="space-y-4">
                 {FIELD_ORDER.map((field, index) => {
                   const isRequired = REQUIRED_FIELDS.includes(field)
@@ -570,15 +594,14 @@ function App() {
                           value={formData[field]}
                           onChange={(e) => handleInputChange(field, e.target.value)}
                           onKeyDown={(e) => handleKeyDown(e, field)}
-                          className={`flex-1 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 ${
-                            errors[field] 
-                              ? highContrast 
-                                ? 'border-2 border-red-900 bg-white text-black'
-                                : 'border-2 border-red-600 bg-white text-gray-900'
-                              : highContrast
-                                ? 'border-2 border-black bg-white text-black'
-                                : 'border-2 border-gray-800 bg-white text-gray-900'
-                          }`}
+                          className={`flex-1 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 ${errors[field]
+                            ? highContrast
+                              ? 'border-2 border-red-900 bg-white text-black'
+                              : 'border-2 border-red-600 bg-white text-gray-900'
+                            : highContrast
+                              ? 'border-2 border-black bg-white text-black'
+                              : 'border-2 border-gray-800 bg-white text-gray-900'
+                            }`}
                           autoFocus={index === 0 && !editingEntry}
                           aria-required={isRequired}
                           aria-invalid={!!errors[field]}
@@ -587,15 +610,14 @@ function App() {
                         <button
                           type="button"
                           onClick={() => startVoiceInput(field)}
-                          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors border-2 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 ${
-                            isListening && activeVoiceField === field
-                              ? highContrast
-                                ? 'bg-red-900 text-white border-red-900'
-                                : 'bg-red-700 text-white border-red-700 hover:bg-red-800'
-                              : highContrast
-                                ? 'bg-gray-200 text-black border-black hover:bg-gray-300'
-                                : 'bg-gray-200 text-gray-900 border-gray-800 hover:bg-gray-300'
-                          }`}
+                          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors border-2 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 ${isListening && activeVoiceField === field
+                            ? highContrast
+                              ? 'bg-red-900 text-white border-red-900'
+                              : 'bg-red-700 text-white border-red-700 hover:bg-red-800'
+                            : highContrast
+                              ? 'bg-gray-200 text-black border-black hover:bg-gray-300'
+                              : 'bg-gray-200 text-gray-900 border-gray-800 hover:bg-gray-300'
+                            }`}
                           aria-label={`Voice input for ${FIELD_LABELS[field]}`}
                           title={isListening && activeVoiceField === field ? 'Stop listening' : 'Start voice input'}
                         >
@@ -611,15 +633,14 @@ function App() {
               </div>
 
               {submitStatus && (
-                <div className={`mt-4 p-3 rounded-md text-sm border-2 font-semibold ${
-                  submitStatus.type === 'success' 
-                    ? highContrast
-                      ? 'bg-green-100 text-green-900 border-green-900'
-                      : 'bg-green-50 text-green-800 border-green-300'
-                    : highContrast
-                      ? 'bg-red-100 text-red-900 border-red-900'
-                      : 'bg-red-50 text-red-800 border-red-300'
-                }`} role="alert">
+                <div className={`mt-4 p-3 rounded-md text-sm border-2 font-semibold ${submitStatus.type === 'success'
+                  ? highContrast
+                    ? 'bg-green-100 text-green-900 border-green-900'
+                    : 'bg-green-50 text-green-800 border-green-300'
+                  : highContrast
+                    ? 'bg-red-100 text-red-900 border-red-900'
+                    : 'bg-red-50 text-red-800 border-red-300'
+                  }`} role="alert">
                   {submitStatus.message}
                 </div>
               )}
@@ -627,11 +648,10 @@ function App() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className={`mt-6 w-full py-2 px-4 rounded-md border-2 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${
-                  highContrast
-                    ? 'bg-black text-white border-black hover:bg-gray-800'
-                    : 'bg-blue-700 text-white border-blue-700 hover:bg-blue-800'
-                }`}
+                className={`mt-6 w-full py-2 px-4 rounded-md border-2 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${highContrast
+                  ? 'bg-black text-white border-black hover:bg-gray-800'
+                  : 'bg-blue-700 text-white border-blue-700 hover:bg-blue-800'
+                  }`}
                 aria-busy={isSubmitting}
               >
                 {isSubmitting ? 'Submitting...' : editingEntry ? 'Update Entry' : 'Submit'}
@@ -642,11 +662,10 @@ function App() {
             <div className={`${highContrast ? 'bg-white border-2 border-black' : 'bg-white'} rounded-lg shadow-sm p-6`}>
               <button
                 onClick={() => handleDownload()}
-                className={`w-full py-2 px-4 rounded-md border-2 font-semibold focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-2 transition-colors ${
-                  highContrast
-                    ? 'bg-green-900 text-white border-green-900 hover:bg-green-800'
-                    : 'bg-green-700 text-white border-green-700 hover:bg-green-800'
-                }`}
+                className={`w-full py-2 px-4 rounded-md border-2 font-semibold focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-2 transition-colors ${highContrast
+                  ? 'bg-green-900 text-white border-green-900 hover:bg-green-800'
+                  : 'bg-green-700 text-white border-green-700 hover:bg-green-800'
+                  }`}
                 aria-label="Download all datasets as Excel file"
               >
                 Download All Datasets as Excel File
@@ -674,11 +693,10 @@ function App() {
                     </h2>
                     <button
                       onClick={() => handleDownload(selectedDataset)}
-                      className={`px-4 py-2 rounded-md border-2 font-semibold focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-2 transition-colors ${
-                        highContrast
-                          ? 'bg-green-900 text-white border-green-900 hover:bg-green-800'
-                          : 'bg-green-700 text-white border-green-700 hover:bg-green-800'
-                      }`}
+                      className={`px-4 py-2 rounded-md border-2 font-semibold focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-2 transition-colors ${highContrast
+                        ? 'bg-green-900 text-white border-green-900 hover:bg-green-800'
+                        : 'bg-green-700 text-white border-green-700 hover:bg-green-800'
+                        }`}
                       aria-label={`Download ${selectedDataset} dataset`}
                     >
                       Download This Dataset
@@ -721,22 +739,20 @@ function App() {
                                 <div className="flex gap-2">
                                   <button
                                     onClick={() => handleEdit(entry)}
-                                    className={`font-semibold focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded px-2 py-1 border ${
-                                      highContrast
-                                        ? 'text-blue-900 border-blue-900 hover:bg-blue-100'
-                                        : 'text-blue-700 border-blue-700 hover:bg-blue-50'
-                                    }`}
+                                    className={`font-semibold focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded px-2 py-1 border ${highContrast
+                                      ? 'text-blue-900 border-blue-900 hover:bg-blue-100'
+                                      : 'text-blue-700 border-blue-700 hover:bg-blue-50'
+                                      }`}
                                     aria-label={`Edit entry ${entry.id}`}
                                   >
                                     Edit
                                   </button>
                                   <button
                                     onClick={() => handleDelete(entry.id)}
-                                    className={`font-semibold focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 rounded px-2 py-1 border ${
-                                      highContrast
-                                        ? 'text-red-900 border-red-900 hover:bg-red-100'
-                                        : 'text-red-700 border-red-700 hover:bg-red-50'
-                                    }`}
+                                    className={`font-semibold focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 rounded px-2 py-1 border ${highContrast
+                                      ? 'text-red-900 border-red-900 hover:bg-red-100'
+                                      : 'text-red-700 border-red-700 hover:bg-red-50'
+                                      }`}
                                     aria-label={`Delete entry ${entry.id}`}
                                   >
                                     Delete

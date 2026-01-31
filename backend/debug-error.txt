@@ -1,0 +1,13 @@
+{
+  "length": 384,
+  "name": "error",
+  "severity": "ERROR",
+  "code": "23502",
+  "detail": "Failing row contains (8, Repair Verification, FIX-001, null, POL-FIX, CLM-FIX, VEH-FIX, null, Fix Verification, null, null, null, 2026-01-31 05:29:47.712283+00, 2026-01-31 05:29:47.712283+00, 2024-01-31).",
+  "schema": "public",
+  "table": "entries",
+  "column": "date_of_fir",
+  "file": "execMain.c",
+  "line": "1981",
+  "routine": "ExecConstraints"
+}
