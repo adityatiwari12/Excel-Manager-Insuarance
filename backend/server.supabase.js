@@ -360,7 +360,12 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/dist', 'index.html'));
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-  console.log('Connected to Supabase');
-});
+// Export app for serverless use
+export default app;
+
+if (process.env.NODE_ENV !== 'production' || process.argv[1].endsWith('server.supabase.js')) {
+  app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+    console.log('Connected to Supabase');
+  });
+}
