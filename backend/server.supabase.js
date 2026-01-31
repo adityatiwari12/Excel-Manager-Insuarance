@@ -23,8 +23,8 @@ const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
-  console.error('ERROR: Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in .env file');
-  process.exit(1);
+  console.error('ERROR: Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY environment variables');
+  // Don't exit process in serverless mode, just log
 }
 
 const supabase = createClient(supabaseUrl, supabaseKey);
@@ -352,13 +352,13 @@ app.get('/api/export', async (req, res) => {
   }
 });
 
-// Serve static files from the React frontend/dist folder
-app.use(express.static(path.join(__dirname, '../frontend/dist')));
-
-// Support React Routing - must be AFTER all other API routes
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/dist', 'index.html'));
-});
+// Serve static files from the React frontend/dist folder ONLY if not on Vercel
+if (process.env.VERCEL !== '1') {
+  app.use(express.static(path.join(__dirname, '../frontend/dist')));
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/dist', 'index.html'));
+  });
+}
 
 // Export app for serverless use
 export default app;
