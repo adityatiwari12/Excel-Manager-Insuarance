@@ -1,11 +1,22 @@
-# Excel Data Manager
+# Excel Data Manager - Official Claim Intimation Register
 
-A high-performance, resilient web application for rapid data entry, management, and export. Designed for speed, accessibility, and data safety.
+A high-performance, resilient web application built specifically for **Insurance Company Operations**. Optimized for rapid data entry, claim management, and export within a professional insurance context.
 
 ![Project Status](https://img.shields.io/badge/Status-Active-success)
 ![Tech Stack](https://img.shields.io/badge/Stack-React_Node_Supabase-blue)
 
-## 🚀 Key Features
+## � Screenshots
+
+<p align="center">
+  <img src="images/Screenshot 2026-01-31 130708.png" width="45%" alt="Dashboard 1" />
+  <img src="images/Screenshot 2026-01-31 130721.png" width="45%" alt="Dashboard 2" />
+</p>
+<p align="center">
+  <img src="images/Screenshot 2026-01-31 130737.png" width="45%" alt="Guide Page" />
+  <img src="images/Screenshot 2026-01-31 130753.png" width="45%" alt="Manage Section" />
+</p>
+
+## �🚀 Key Features
 
 ### ⚡ Efficient Data Entry
 - **Vertical Form Layout**: Optimized for high-speed data entry with keyboard navigation.
@@ -22,6 +33,7 @@ A high-performance, resilient web application for rapid data entry, management, 
 ### ♿ Accessibility & UX
 - **High Contrast Mode**: Toggle for improved visibility.
 - **Dynamic Font Sizing**: Adjust text size for better readability.
+- **Multilingual User Guide**: Integrated "How to Use" guide in both **English and Hindi**.
 - **Responsive Design**: Works on desktop, tablet, and mobile devices.
 
 ### 📊 Management & Export

@@ -82,6 +82,7 @@ function App() {
   const [highContrast, setHighContrast] = useState(() => {
     return localStorage.getItem('highContrast') === 'true'
   })
+  const [language, setLanguage] = useState('en')
 
   const inputRefs = useRef({})
   const recognitionRef = useRef(null)
@@ -440,12 +441,30 @@ function App() {
   }
 
   return (
-    <div className={`min-h-screen ${highContrast ? 'bg-white' : 'bg-gray-50'} py-8 px-4`}>
-      <div className="max-w-6xl mx-auto">
+    <div className={`min-h-screen ${highContrast ? 'bg-white' : 'bg-gray-50'} py-8 px-4 flex flex-col`}>
+      <div className="max-w-6xl mx-auto w-full flex-grow">
+
+        {/* Header with Title and Logo */}
+        <header className="flex flex-col md:flex-row justify-between items-center mb-8 bg-white p-6 rounded-lg shadow-sm border-2 border-transparent gap-4">
+          <div className="flex items-center gap-4">
+            <img src="/logo.png" alt="Excel Data Manager Logo" className="h-12 w-auto" />
+            <div>
+              <h1 className={`text-3xl font-bold ${highContrast ? 'text-black' : 'text-blue-900'}`}>
+                Excel Data Manager
+              </h1>
+              <p className={`text-xs font-semibold uppercase tracking-wider ${highContrast ? 'text-black' : 'text-blue-700'}`}>
+                Official Claim Intimation Register
+              </p>
+            </div>
+          </div>
+          <div className={`text-right hidden md:block ${highContrast ? 'text-black' : 'text-gray-500'}`}>
+            <p className="text-sm italic font-medium">Built for Insurance Operations Efficiency</p>
+          </div>
+        </header>
 
         {/* Navigation Tabs */}
         <div className={`${highContrast ? 'bg-white border-2 border-black' : 'bg-white'} rounded-lg shadow-sm p-2 mb-6`} role="tablist" aria-label="Application modes">
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <button
               onClick={() => {
                 setViewMode('form')
@@ -455,7 +474,7 @@ function App() {
               role="tab"
               aria-selected={viewMode === 'form'}
               aria-controls="form-panel"
-              className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors border-2 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 ${viewMode === 'form'
+              className={`flex-1 min-w-[120px] px-4 py-2 rounded-md text-sm font-medium transition-colors border-2 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 ${viewMode === 'form'
                 ? highContrast
                   ? 'bg-black text-white border-black'
                   : 'bg-blue-700 text-white border-blue-700'
@@ -476,7 +495,7 @@ function App() {
               role="tab"
               aria-selected={viewMode === 'manage'}
               aria-controls="manage-panel"
-              className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors border-2 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 ${viewMode === 'manage'
+              className={`flex-1 min-w-[120px] px-4 py-2 rounded-md text-sm font-medium transition-colors border-2 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 ${viewMode === 'manage'
                 ? highContrast
                   ? 'bg-black text-white border-black'
                   : 'bg-blue-700 text-white border-blue-700'
@@ -486,6 +505,21 @@ function App() {
                 }`}
             >
               Manage Datasets
+            </button>
+            <button
+              onClick={() => setViewMode('guide')}
+              role="tab"
+              aria-selected={viewMode === 'guide'}
+              className={`flex-1 min-w-[120px] px-4 py-2 rounded-md text-sm font-medium transition-colors border-2 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 ${viewMode === 'guide'
+                ? highContrast
+                  ? 'bg-black text-white border-black'
+                  : 'bg-blue-700 text-white border-blue-700'
+                : highContrast
+                  ? 'bg-white text-black border-black hover:bg-gray-100'
+                  : 'bg-gray-100 text-gray-900 border-gray-300 hover:bg-gray-200'
+                }`}
+            >
+              How to Use
             </button>
           </div>
         </div>
@@ -677,6 +711,88 @@ function App() {
           </div>
         )}
 
+        {/* How to Use View (Multilingual) */}
+        {viewMode === 'guide' && (
+          <div className="space-y-6">
+            <div className={`${highContrast ? 'bg-white border-2 border-black' : 'bg-white'} rounded-lg shadow-sm p-6`}>
+              <div className="flex justify-between items-center mb-6">
+                <h2 className={`text-2xl font-bold ${highContrast ? 'text-black' : 'text-blue-900'}`}>
+                  {language === 'en' ? 'User Guide' : 'उपयोगकर्ता मार्गदर्शिका'}
+                </h2>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setLanguage('en')}
+                    className={`px-3 py-1 text-xs font-bold rounded border-2 transition-colors ${language === 'en'
+                      ? highContrast ? 'bg-black text-white border-black' : 'bg-blue-700 text-white border-blue-700'
+                      : highContrast ? 'bg-white text-black border-black hover:bg-gray-100' : 'bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200'}`}
+                  >
+                    English
+                  </button>
+                  <button
+                    onClick={() => setLanguage('hi')}
+                    className={`px-3 py-1 text-xs font-bold rounded border-2 transition-colors ${language === 'hi'
+                      ? highContrast ? 'bg-black text-white border-black' : 'bg-blue-700 text-white border-blue-700'
+                      : highContrast ? 'bg-white text-black border-black hover:bg-gray-100' : 'bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200'}`}
+                  >
+                    हिन्दी
+                  </button>
+                </div>
+              </div>
+
+              <div className={`space-y-8 ${highContrast ? 'text-black' : 'text-gray-800'}`}>
+                <section>
+                  <h3 className="text-lg font-bold mb-3 border-b-2 border-blue-100 pb-1">
+                    {language === 'en' ? '1. Accurate Data Entry' : '1. सटीक डेटा प्रविष्टि'}
+                  </h3>
+                  <p className="text-sm leading-relaxed">
+                    {language === 'en'
+                      ? 'This tool is optimized for high-speed claim intimation registration. Each field corresponds to a critical data point for insurance processing. Use "Tab" to move to the next field quickly.'
+                      : 'यह टूल हाई-स्पीड क्लेम इंटिमेशन रेजिस्ट्रेशन के लिए अनुकूलित है। प्रत्येक फ़ील्ड बीमा प्रसंस्करण के लिए एक महत्वपूर्ण डेटा पॉइंट से मेल खाती है। तेज़ी से अगले फ़ील्ड पर जाने के लिए "Tab" का उपयोग करें।'}
+                  </p>
+                  <ul className="list-disc ml-5 mt-2 text-sm space-y-1">
+                    <li>{language === 'en' ? 'Red asterisks (*) indicate mandatory fields like Policy and Claim numbers.' : 'लाल तारांकन (*) पॉलिसी और क्लेम नंबर जैसे अनिवार्य फ़ील्ड को दर्शाते हैं।'}</li>
+                    <li>{language === 'en' ? 'Voice input is available (🎤) for hands-free data capture during phone calls.' : 'फोन कॉल के दौरान हैंड्स-फ्री डेटा कैप्चर के लिए वॉइस इनपुट (🎤) उपलब्ध है।'}</li>
+                  </ul>
+                </section>
+
+                <section>
+                  <h3 className="text-lg font-bold mb-3 border-b-2 border-blue-100 pb-1">
+                    {language === 'en' ? '2. Managing Datasets' : '2. डेटासेट प्रबंधित करना'}
+                  </h3>
+                  <p className="text-sm leading-relaxed">
+                    {language === 'en'
+                      ? 'Datasets act as virtual folders. You can organize intakes by branch, date, or insurance type.'
+                      : 'डेटासेट वर्चुअल फोल्डर्स के रूप में कार्य करते हैं। आप शाखा, तिथि या बीमा प्रकार के अनुसार इंटेक्स को व्यवस्थित कर सकते हैं।'}
+                  </p>
+                  <ul className="list-disc ml-5 mt-2 text-sm space-y-1">
+                    <li>{language === 'en' ? 'Create a "New Dataset" for each batch of registrations.' : 'पंजीकरण के प्रत्येक बैच के लिए एक "नया डेटासेट" बनाएं।'}</li>
+                    <li>{language === 'en' ? 'Switch to "Manage Datasets" to edit or delete existing entries.' : 'मौजूदा प्रविष्टियों को संपादित करने या हटाने के लिए "मैनेज डेटासेट" पर स्विच करें।'}</li>
+                  </ul>
+                </section>
+
+                <section>
+                  <h3 className="text-lg font-bold mb-3 border-b-2 border-blue-100 pb-1">
+                    {language === 'en' ? '3. Reporting and Export' : '3. रिपोर्टिंग और एक्सपोर्ट'}
+                  </h3>
+                  <p className="text-sm leading-relaxed">
+                    {language === 'en'
+                      ? 'Download your data anytime as professionally formatted Excel files (.xlsx). The system automatically sizes columns for readability.'
+                      : 'किसी भी समय पेशेवर रूप से स्वरूपित एक्सेल फाइलों (.xlsx) के रूप में अपना डेटा डाउनलोड करें। सिस्टम पठनीयता के लिए स्वचालित रूप से कॉलम का आकार निर्धारित करता है।'}
+                  </p>
+                </section>
+
+                <div className={`p-4 rounded-md border-2 ${highContrast ? 'bg-gray-100 border-black' : 'bg-blue-50 border-blue-100'}`}>
+                  <p className="text-xs italic font-bold">
+                    {language === 'en'
+                      ? 'Note: All data is auto-saved locally. Even if you refresh the page, your progress in the Claim Register is preserved.'
+                      : 'नोट: सभी डेटा स्थानीय रूप से ऑटो-सेव होता है। यदि आप पेज को रिफ्रेश भी करते हैं, तो क्लेम रजिस्टर में आपकी प्रगति सुरक्षित रहती है।'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Manage View */}
         {viewMode === 'manage' && (
           <div role="tabpanel" id="manage-panel" aria-labelledby="manage-tab">
@@ -771,6 +887,29 @@ function App() {
           </div>
         )}
       </div>
+
+      {/* Footer */}
+      <footer className={`max-w-6xl mx-auto w-full mt-12 pt-8 border-t-2 ${highContrast ? 'border-black text-black' : 'border-gray-200 text-gray-600'}`}>
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4 px-4">
+          <p className="text-sm font-medium">
+            © {new Date().getFullYear()} Excel Data Manager. All rights reserved.
+          </p>
+          <div className="flex items-center gap-3">
+            <span className="text-sm">Built by <span className="font-bold underline">Aditya Tiwari</span></span>
+            <a
+              href="https://github.com/adityatiwari12"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`p-2 rounded-full transition-all hover:scale-110 ${highContrast ? 'bg-black text-white' : 'bg-gray-900 text-white'}`}
+              aria-label="View Aditya Tiwari's GitHub Profile"
+            >
+              <svg height="20" width="20" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
+              </svg>
+            </a>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }
