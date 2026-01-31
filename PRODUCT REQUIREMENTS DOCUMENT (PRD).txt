@@ -1,0 +1,117 @@
+PRODUCT REQUIREMENTS DOCUMENT (PRD)
+
+1. Objective
+Create a web application that allows fast vertical form-based data entry and converts it into a structured, multi-sheet Excel spreadsheet that can be downloaded by the user.
+
+2. Core Concept
+Input is optimized for humans (vertical form).
+Output is optimized for systems (horizontal spreadsheet).
+
+3. Functional Requirements
+
+3.1 Input Form
+- Single vertical column of fields
+- Fixed field order
+- Required field validation
+- Keyboard navigation (Enter moves to next field)
+- Submit action at the bottom
+
+Fields:
+- Serial Number
+- Case Number
+- Policy Number
+- Claim Number
+- Vehicle Number
+- Court
+
+- Title
+- FIR Number
+- Date of FIR
+- Date of Accident
+
+3.2 Dataset (Sheet) Management
+- User can select an existing dataset or create a new one
+- Each dataset represents one Excel sheet
+- Dataset names must be unique
+- Data is appended row by row
+
+3.3 Data Processing Logic
+- On submit, collect all field values
+- Convert vertical data into a horizontal row
+- Append to the selected dataset
+- Preserve column order
+- Do not modify existing records
+- Clear input values after successful submission
+
+3.4 Excel Export
+- Single downloadable .xlsx file
+- One worksheet per dataset
+- Headers generated once per sheet
+- Data written row-wise
+- Compatible with Excel and Google Sheets
+
+4. Logic Requirements
+
+- Form submission is atomic (all-or-nothing)
+- No partial writes
+- Dataset creation is automatic if not found
+- Form state and dataset state must stay in sync
+- Export reflects current in-memory data exactly
+
+5. Design Requirements
+
+5.1 Layout
+- Clean, minimal interface
+- Vertical form layout
+- Dataset selector placed above the form
+- Submit button fixed at bottom
+
+5.2 UX Rules
+- No page reloads
+- Clear error messages
+- Visual confirmation on successful submission
+- Fast form reset
+
+5.3 Visual Style
+- Neutral colors
+- No heavy animations
+- Readability over decoration
+- Desktop-first, responsive by default
+
+6. Tech Stack (Recommended)
+
+Frontend:
+- React (Vite)
+- Plain CSS or Tailwind
+- Controlled form components
+
+Backend:
+- Node.js
+- Express.js
+
+Excel Generation:
+- exceljs
+
+Data Storage:
+- In-memory (initial version)
+- Optional upgrade to database later
+
+7. Tech Check (Validation)
+
+- Can handle multiple datasets in parallel
+- Can append unlimited rows
+- Excel file structure is deterministic
+- No data loss between submissions
+- Exported file opens correctly in Excel
+
+8. Out of Scope
+- Authentication
+- User roles
+- External integrations
+- Real-time collaboration
+
+9. Success Criteria
+- Users can enter data continuously without friction
+- Excel output matches standard spreadsheet format
+- Multiple datasets are preserved correctly
+- System behaves predictably under repeated use
