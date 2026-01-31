@@ -1,15 +1,18 @@
 {
-  "name": "excel-data-manager",
+  "name": "excel-data-manager-backend",
   "version": "1.0.0",
-  "description": "Web application for structured data entry and Excel generation",
+  "type": "module",
   "scripts": {
-    "dev": "concurrently \"npm run dev --prefix frontend\" \"npm run dev --prefix backend\"",
-    "dev:frontend": "npm run dev --prefix frontend",
-    "dev:backend": "npm run dev --prefix backend",
-    "install:all": "npm install && npm install --prefix frontend && npm install --prefix backend",
-    "build": "npm run build --prefix frontend"
+    "dev": "node --watch server.supabase.js",
+    "start": "node server.supabase.js"
   },
-  "devDependencies": {
-    "concurrently": "^8.2.2"
+  "dependencies": {
+    "@supabase/supabase-js": "^2.93.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "exceljs": "^4.4.0",
+    "express": "^4.18.2",
+    "mongodb": "^6.3.0",
+    "pg": "^8.18.0"
   }
 }
