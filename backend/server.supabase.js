@@ -3,11 +3,16 @@ import cors from 'cors';
 import ExcelJS from 'exceljs';
 import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Middleware
 app.use(cors());
@@ -345,6 +350,14 @@ app.get('/api/export', async (req, res) => {
     console.error('Export error:', error);
     res.status(500).json({ error: 'Error generating Excel file' });
   }
+});
+
+// Serve static files from the React frontend/dist folder
+app.use(express.static(path.join(__dirname, '../frontend/dist')));
+
+// Support React Routing - must be AFTER all other API routes
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/dist', 'index.html'));
 });
 
 app.listen(PORT, () => {
